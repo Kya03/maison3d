@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { useEffect, useRef, useState } from 'react';
+import { Instances, OrbitControls } from '@react-three/drei';
+import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { plan } from './plan';
 import { build, STAIR, type Op, type V3 } from './geometry';
@@ -85,7 +85,14 @@ function Orbit() {
   return <OrbitControls target={[8.5, 0, 12]} />;
 }
 
-export default function App() {
+// Filet de sécurité : au lieu d'une page blanche, affiche l'erreur à l'écran.
+class Boundary extends Component<{ children: ReactNode }, { e: string }> {
+  state = { e: '' };
+  static getDerivedStateFromError(e: Error) { return { e: String(e.stack || e) }; }
+  render() { return this.state.e ? <pre style={{ padding: 16, whiteSpace: 'pre-wrap' }}>Erreur : {this.state.e}</pre> : this.props.children; }
+}
+
+function Main() {
   const [mode, setMode] = useState<Mode>('orbit');
   const [show, setShow] = useState<'all' | 0 | 1>('all');
   const [hour, setHour] = useState(11);
@@ -107,6 +114,7 @@ export default function App() {
   return (
     <>
       <div style={{ position: 'absolute', zIndex: 1, top: 12, left: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontSize: 11, opacity: 0.6 }}>v6{light ? ' · léger' : ''}</div>
         <div>{b(mode === 'orbit', 'Vue libre', () => go('orbit'))}{b(mode === 'walk', 'Visite à pied', () => go('walk'))}{b(mode === 'tour', 'Visite auto', () => go('tour'))}</div>
         {mode === 'orbit' && <div>{b(show === 'all', 'Tout', () => setShow('all'))}{b(show === 0, 'Rez-de-chaussée', () => setShow(0))}{b(show === 1, 'Étage', () => setShow(1))}</div>}
         <label style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>
@@ -117,9 +125,10 @@ export default function App() {
         {mode === 'walk' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique dans la scène · ZQSD/flèches · Maj = courir · Échap = libérer la souris</div>}
         {mode === 'orbit' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique sur une porte pour l'ouvrir</div>}
       </div>
-      <Canvas key={ck} shadows={!light} dpr={[1, 1.5]} gl={{ powerPreference: 'high-performance' }} camera={{ position: [10, 24, 40], fov: 45 }}
+      <Canvas key={ck} shadows={!light} dpr={1} camera={{ position: [10, 24, 40], fov: 45 }}
         onCreated={({ gl }) => gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost.current += 1; if (lost.current > 1) setLight(true); setTimeout(() => setCk((k) => k + 1), 400); })}>
         <Sky hour={hour} shadow={!light} />
+        <Instances limit={5000} castShadow receiveShadow><boxGeometry /><meshStandardMaterial />
         {mode === 'orbit' && <Orbit />}
         {b(cover, 'Piscine couverte', () => setCover((v) => !v))}
         {mode === 'walk' && <Walk />}
@@ -131,7 +140,12 @@ export default function App() {
         <Outdoor Door={Door} cover={cover} />
         {(show === 'all' || show === 0) && <><Level level={0} />{!light && <Decor level={0} />}</>}
         {(show === 'all' || show === 1) && <><Level level={1} />{!light && <Decor level={1} />}{roof && <Roof />}</>}
+        </Instances>
       </Canvas>
     </>
   );
+}
+
+export default function App() {
+  return <Boundary><Main /></Boundary>;
 }
