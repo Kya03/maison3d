@@ -34,7 +34,8 @@ export const plan = Plan.parse({
     r('e-ch2', 'Chambre', 1, 4.15, 8.3, 4.0, 3.8, { floor: 'wood' }),
     r('e-cuisL', 'Cuisine', 1, 4.15, 14.9, 2.8, 2.5, { floor: 'tile' }),
     r('e-salL', 'Salon', 1, 4.15, 17.55, 4.0, 4.3, { floor: 'wood' }),
-    r('e-esc', 'Escalier', 1, 8.3, 16.85, 2.4, 5.0, { floor: 'none' }),
+    r('e-esc', 'Escalier', 1, 8.3, 16.85, 2.4, 5.0, { floor: 'none', open: true }),
+    r('e-hall', 'Hall', 1, 8.3, 8.3, 2.55, 8.55, { open: true }),
     r('e-cuisR', 'Cuisine', 1, 10.95, 9.9, 2.6, 2.7, { floor: 'tile' }),
     r('e-chR', 'Chambre', 1, 13.7, 12.7, 3.15, 3.0, { floor: 'wood' }),
     r('e-salR', 'Salon', 1, 10.85, 15.85, 6.0, 6.0, { floor: 'wood' }),
@@ -59,6 +60,13 @@ export const plan = Plan.parse({
     { level: 1, x: 13.85, z: 21.925, kind: 'window', w: 2.5 },
     { level: 1, x: 8.8, z: 4.075, kind: 'window', w: 2.0 },
     { level: 1, x: 9.8, z: 8.225, kind: 'door', w: 0.9 },
+    { level: 1, x: 8.225, z: 10.0, kind: 'door', w: 0.9 },
+    { level: 1, x: 10.875, z: 11.2, kind: 'door', w: 0.9 },
+    { level: 1, x: 10.775, z: 16.3, kind: 'door', w: 0.9 },
+    { level: 1, x: 15.0, z: 15.775, kind: 'door', w: 0.9 },
+    { level: 1, x: 6.725, z: 5.2, kind: 'door', w: 0.8 },
+    { level: 1, x: 6.725, z: 7.2, kind: 'door', w: 0.8 },
+    { level: 1, x: 5.5, z: 17.475, kind: 'door', w: 0.9 },
   ],
   exterior: [
     // Issus du plan de masse : FS (fosse septique), PP (puisard)
