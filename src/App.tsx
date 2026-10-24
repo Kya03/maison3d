@@ -3,10 +3,11 @@ import { OrbitControls } from '@react-three/drei';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { plan } from './plan';
-import { build, type Op, type V3 } from './geometry';
+import { build, STAIR, type Op, type V3 } from './geometry';
+import { C, Decor, Outdoor } from './decor';
 import { Tour, Walk } from './Rig';
 
-const THEME = { wall: '#f1e9da', ground: '#d8c9a3', sand: '#e0cfa9', wood: '#b98a5a', tile: '#cfc6b8', door: '#8a5a3a', glass: '#9fd0e8' };
+const THEME = { wall: C.off, ground: '#d8c9a3', sand: '#e0cfa9', wood: '#b98a5a', tile: '#cfc6b8', door: '#8a5a3a', glass: '#9fd0e8' };
 const EXT = { pool: ['#4fb6c9', 0.05], tank: ['#999999', 0.3], pit: ['#777777', 0.3], garden: ['#6a9a4a', 0.1], garage: ['#bbbbbb', 2.8] } as const;
 type Mode = 'orbit' | 'walk' | 'tour';
 
@@ -61,9 +62,9 @@ function Level({ level }: { level: number }) {
         ? <Box key={`${o.x},${o.z}`} p={[o.x, base + 1.5, o.z]} s={o.horiz ? [o.w, 1.2, 0.03] : [0.03, 1.2, o.w]} c={THEME.glass} o={0.35} />
         : <Door key={`${o.x},${o.z}`} o={o} base={base} />)}
       {level === 0 && rooms.filter((r) => r.name === 'Escalier').map((r) => {
-        const n = 16, rise = H / n, run = r.d / n;
+        const n = 16, rise = H / n, run = STAIR.d / n;
         return Array.from({ length: n }, (_, i) => (
-          <Box key={`${r.id}-${i}`} p={[r.x + r.w / 2, ((i + 1) * rise) / 2, r.z + r.d - (i + 0.5) * run]} s={[r.w - 0.3, (i + 1) * rise, run]} c={THEME.tile} />
+          <Box key={`${r.id}-${i}`} p={[STAIR.x + STAIR.w / 2, ((i + 1) * rise) / 2, STAIR.z + STAIR.d - (i + 0.5) * run]} s={[STAIR.w - 0.1, (i + 1) * rise, run]} c={THEME.tile} />
         ));
       })}
     </group>
@@ -95,6 +96,7 @@ export default function App() {
   const [show, setShow] = useState<'all' | 0 | 1>('all');
   const [hour, setHour] = useState(11);
   const [auto, setAuto] = useState(false);
+  const [cover, setCover] = useState(false);
   useEffect(() => {
     if (!auto) return;
     const i = setInterval(() => setHour((h) => (h + 0.04) % 24), 50);
@@ -113,20 +115,23 @@ export default function App() {
           Heure {Math.floor(hour)} h <input type="range" min={0} max={24} step={0.1} value={hour} onChange={(e) => setHour(+e.target.value)} />
           <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> défilement
         </label>
+        {b(cover, 'Piscine couverte', () => setCover((v) => !v))}
         {mode === 'walk' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique dans la scène · ZQSD/flèches · Maj = courir · Échap = libérer la souris</div>}
         {mode === 'orbit' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique sur une porte pour l'ouvrir</div>}
       </div>
       <Canvas shadows camera={{ position: [10, 24, 40], fov: 45 }}>
         <Sky hour={hour} />
         {mode === 'orbit' && <Orbit />}
+        {b(cover, 'Piscine couverte', () => setCover((v) => !v))}
         {mode === 'walk' && <Walk />}
         {mode === 'tour' && <Tour onLevel={(l) => setShow(l)} />}
         <Box p={[plan.terrain.w / 2, -0.12, plan.terrain.d / 2]} s={[plan.terrain.w, 0.1, plan.terrain.d]} c={THEME.ground} />
         {plan.exterior.map((e) => (
           <Box key={e.id} p={[e.x + e.w / 2, EXT[e.kind][1] / 2 - 0.05, e.z + e.d / 2]} s={[e.w, EXT[e.kind][1], e.d]} c={EXT[e.kind][0]} />
         ))}
-        {(show === 'all' || show === 0) && <Level level={0} />}
-        {(show === 'all' || show === 1) && <Level level={1} />}
+        <Outdoor Door={Door} cover={cover} />
+        {(show === 'all' || show === 0) && <><Level level={0} /><Decor level={0} /></>}
+        {(show === 'all' || show === 1) && <><Level level={1} /><Decor level={1} /></>}
       </Canvas>
     </>
   );

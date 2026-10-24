@@ -8,11 +8,11 @@ import { blocked, groundY, type V3 } from './geometry';
 export function Walk() {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const keys = useRef<Record<string, boolean>>({});
-  const st = useRef({ x: 9.5, z: 22.5, y: 0 });
+  const st = useRef({ x: 10.25, z: 22.5, y: 0 });
   useEffect(() => {
-    st.current = { x: 9.5, z: 22.5, y: 0 };
+    st.current = { x: 10.25, z: 22.5, y: 0 };
     camera.fov = 70; camera.updateProjectionMatrix();
-    camera.position.set(9.5, 1.65, 22.5); camera.rotation.set(0, 0, 0);
+    camera.position.set(10.25, 1.65, 22.5); camera.rotation.set(0, 0, 0);
     const d = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = true; };
     const u = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = false; };
     window.addEventListener('keydown', d); window.addEventListener('keyup', u);

@@ -42,7 +42,8 @@ export const plan = Plan.parse({
   ],
   openings: [
     // RDC
-    { level: 0, x: 9.5, z: 21.925, kind: 'door', w: 1.2 }, // entrée (cage d'escalier, côté rue)
+    { level: 0, x: 10.25, z: 21.925, kind: 'door', w: 1.0 }, // entrée : couloir à droite de l'escalier
+    { level: 0, x: 10.25, z: 16.775, kind: 'door', w: 1.0 }, // du couloir vers l'espace familial
     { level: 0, x: 6.15, z: 21.925, kind: 'window', w: 1.5 },
     { level: 0, x: 13.85, z: 21.925, kind: 'window', w: 2.5 },
     { level: 0, x: 8.8, z: 4.075, kind: 'window', w: 2.0 },
@@ -73,7 +74,7 @@ export const plan = Plan.parse({
     { id: 'fs', kind: 'tank', x: 1.2, z: 0.5, w: 2.9, d: 2.6 },
     { id: 'pp', kind: 'pit', x: 6.2, z: 0.6, w: 2.0, d: 2.0 },
     // Emplacements provisoires (à définir avec toi) : piscine, potager. Garage : non dessiné, position inconnue.
-    { id: 'pool', kind: 'pool', x: 13.9, z: 5.0, w: 2.8, d: 6.0 },
-    { id: 'potager', kind: 'garden', x: 0.4, z: 6.0, w: 3.2, d: 8.0 },
+    { id: 'pool', kind: 'pool', x: 13.7, z: 4.4, w: 3.0, d: 3.8 },
+    { id: 'potager', kind: 'garden', x: 0.4, z: 6.0, w: 3.2, d: 6.5 },
   ],
 });

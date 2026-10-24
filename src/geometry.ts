@@ -5,7 +5,7 @@ export type Box = { p: V3; s: V3 };
 export type Op = { level: number; x: number; z: number; kind: 'door' | 'slide' | 'window'; w: number; horiz: boolean };
 type Seg = { x1: number; z1: number; x2: number; z2: number };
 export const DIM = { door: { h: 2.1, sill: 0 }, slide: { h: 2.1, sill: 0 }, window: { h: 1.2, sill: 0.9 } };
-export const STAIR = { x: 8.3, z: 16.85, w: 2.4, d: 5.0 };
+export const STAIR = { x: 8.3, z: 16.85, w: 1.4, d: 5.0 }; // volée à gauche ; couloir d'entrée à droite
 const cache = new Map<number, { boxes: Box[]; ops: Op[] }>();
 
 export function build(level: number) {
@@ -46,6 +46,7 @@ export function build(level: number) {
       boxes.push({ p: horiz ? [m, y, line] : [line, y, m], s: horiz ? [len, hh, t] : [t, hh, len] });
     }
   }
+  if (level === 0) boxes.push({ p: [9.76, 1.5, 18.55], s: [0.12, 3, 3.4] }); // cloison escalier / couloir
   const res = { boxes, ops: [...ops.values()] };
   cache.set(level, res);
   return res;
