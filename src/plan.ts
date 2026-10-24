@@ -39,6 +39,10 @@ export const plan = Plan.parse({
     r('e-cuisR', 'Cuisine', 1, 10.95, 9.9, 2.6, 2.7, { floor: 'tile' }),
     r('e-chR', 'Chambre', 1, 13.7, 12.7, 3.15, 3.0, { floor: 'wood' }),
     r('e-salR', 'Salon', 1, 10.85, 15.85, 6.0, 6.0, { floor: 'wood' }),
+    r('e-pal', 'Palier', 1, 6.95, 14.9, 1.35, 2.5, { open: true }),
+    // Balcons (hypothèse de Hop, absents du plan : à faire valider par l'architecte), en porte-à-faux de 1,20 m côté gauche (au-dessus du parking)
+    r('e-balc1', 'Balcon', 1, 2.8, 8.5, 1.2, 3.4, { open: true, floor: 'wood' }),
+    r('e-balc2', 'Balcon', 1, 2.8, 17.8, 1.2, 3.8, { open: true, floor: 'wood' }),
   ],
   openings: [
     // RDC
@@ -68,6 +72,10 @@ export const plan = Plan.parse({
     { level: 1, x: 6.725, z: 5.2, kind: 'door', w: 0.8 },
     { level: 1, x: 6.725, z: 7.2, kind: 'door', w: 0.8 },
     { level: 1, x: 5.5, z: 17.475, kind: 'door', w: 0.9 },
+    { level: 1, x: 7.5, z: 17.475, kind: 'door', w: 1.0 },
+    { level: 1, x: 7.025, z: 16.2, kind: 'door', w: 0.9 },
+    { level: 1, x: 4.075, z: 10.2, kind: 'slide', w: 1.6 }, // vers balcon de la chambre
+    { level: 1, x: 4.075, z: 19.7, kind: 'slide', w: 1.6 }, // vers balcon du salon
   ],
   exterior: [
     // Issus du plan de masse : FS (fosse septique), PP (puisard)

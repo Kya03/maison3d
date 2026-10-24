@@ -4,21 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { plan } from './plan';
 import { build, STAIR, type Op, type V3 } from './geometry';
-import { C, Decor, Outdoor } from './decor';
+import { C, Decor, Outdoor, Roof } from './decor';
+import { Bx } from './shared';
 import { Tour, Walk } from './Rig';
 
 const THEME = { wall: C.off, ground: '#d8c9a3', sand: '#e0cfa9', wood: '#b98a5a', tile: '#cfc6b8', door: '#8a5a3a', glass: '#9fd0e8' };
 const EXT = { pool: ['#4fb6c9', 0.05], tank: ['#999999', 0.3], pit: ['#777777', 0.3], garden: ['#6a9a4a', 0.1], garage: ['#bbbbbb', 2.8] } as const;
 type Mode = 'orbit' | 'walk' | 'tour';
 
-function Box({ p, s, c, o }: { p: V3; s: V3; c: string; o?: number }) {
-  return (
-    <mesh position={p} castShadow receiveShadow>
-      <boxGeometry args={s} />
-      <meshStandardMaterial color={c} transparent={o !== undefined} opacity={o ?? 1} />
-    </mesh>
-  );
-}
+const Box = Bx;
 
 // Porte battante (pivot sur un côté) ou coulissante. S'ouvre quand on s'approche, ou au clic.
 function Door({ o, base }: { o: Op; base: number }) {
@@ -72,15 +66,15 @@ function Level({ level }: { level: number }) {
 }
 
 // Lumière du jour : heure 0-24, soleil se lève à l'est (6 h) et se couche à l'ouest (18 h).
-function Sky({ hour }: { hour: number }) {
+function Sky({ hour, shadow }: { hour: number; shadow: boolean }) {
   const ang = ((hour - 6) / 12) * Math.PI, s = Math.sin(ang), day = Math.max(0, s);
   const bg = new THREE.Color('#0b1026').lerp(new THREE.Color('#eaf2f8'), Math.min(1, day * 2)).getStyle();
   return (
     <>
       <color attach="background" args={[bg]} />
       <ambientLight intensity={0.3 + 0.5 * day} />
-      <directionalLight castShadow position={[8.5 + Math.cos(ang) * 35, Math.max(0.15, s) * 35, 14]} intensity={0.2 + 1.3 * day}
-        shadow-mapSize={[2048, 2048]} shadow-camera-left={-30} shadow-camera-right={30} shadow-camera-top={30} shadow-camera-bottom={-30} shadow-camera-near={1} shadow-camera-far={150} />
+      <directionalLight castShadow={shadow} position={[8.5 + Math.cos(ang) * 35, Math.max(0.15, s) * 35, 14]} intensity={0.2 + 1.3 * day}
+        shadow-mapSize={[1024, 1024]} shadow-camera-left={-30} shadow-camera-right={30} shadow-camera-top={30} shadow-camera-bottom={-30} shadow-camera-near={1} shadow-camera-far={150} />
     </>
   );
 }
@@ -97,6 +91,10 @@ export default function App() {
   const [hour, setHour] = useState(11);
   const [auto, setAuto] = useState(false);
   const [cover, setCover] = useState(false);
+  const [light, setLight] = useState(location.search.includes('leger'));
+  const [roof, setRoof] = useState(true);
+  const [ck, setCk] = useState(0);
+  const lost = useRef(0);
   useEffect(() => {
     if (!auto) return;
     const i = setInterval(() => setHour((h) => (h + 0.04) % 24), 50);
@@ -115,12 +113,13 @@ export default function App() {
           Heure {Math.floor(hour)} h <input type="range" min={0} max={24} step={0.1} value={hour} onChange={(e) => setHour(+e.target.value)} />
           <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> défilement
         </label>
-        {b(cover, 'Piscine couverte', () => setCover((v) => !v))}
+        <div>{b(cover, 'Piscine couverte', () => setCover((v) => !v))}{b(roof, 'Toit', () => setRoof((v) => !v))}{b(light, 'Mode léger', () => setLight((v) => !v))}</div>
         {mode === 'walk' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique dans la scène · ZQSD/flèches · Maj = courir · Échap = libérer la souris</div>}
         {mode === 'orbit' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique sur une porte pour l'ouvrir</div>}
       </div>
-      <Canvas shadows camera={{ position: [10, 24, 40], fov: 45 }}>
-        <Sky hour={hour} />
+      <Canvas key={ck} shadows={!light} dpr={[1, 1.5]} gl={{ powerPreference: 'high-performance' }} camera={{ position: [10, 24, 40], fov: 45 }}
+        onCreated={({ gl }) => gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost.current += 1; if (lost.current > 1) setLight(true); setTimeout(() => setCk((k) => k + 1), 400); })}>
+        <Sky hour={hour} shadow={!light} />
         {mode === 'orbit' && <Orbit />}
         {b(cover, 'Piscine couverte', () => setCover((v) => !v))}
         {mode === 'walk' && <Walk />}
@@ -130,8 +129,8 @@ export default function App() {
           <Box key={e.id} p={[e.x + e.w / 2, EXT[e.kind][1] / 2 - 0.05, e.z + e.d / 2]} s={[e.w, EXT[e.kind][1], e.d]} c={EXT[e.kind][0]} />
         ))}
         <Outdoor Door={Door} cover={cover} />
-        {(show === 'all' || show === 0) && <><Level level={0} /><Decor level={0} /></>}
-        {(show === 'all' || show === 1) && <><Level level={1} /><Decor level={1} /></>}
+        {(show === 'all' || show === 0) && <><Level level={0} />{!light && <Decor level={0} />}</>}
+        {(show === 'all' || show === 1) && <><Level level={1} />{!light && <Decor level={1} />}{roof && <Roof />}</>}
       </Canvas>
     </>
   );

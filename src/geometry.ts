@@ -47,6 +47,11 @@ export function build(level: number) {
     }
   }
   if (level === 0) boxes.push({ p: [9.76, 1.5, 18.55], s: [0.12, 3, 3.4] }); // cloison escalier / couloir
+  if (level === 1) for (const r of plan.rooms) if (r.name === 'Balcon') { // garde-corps plein de 1 m
+    boxes.push({ p: [r.x + 0.06, base + 0.5, r.z + r.d / 2], s: [0.12, 1, r.d] });
+    boxes.push({ p: [r.x + r.w / 2, base + 0.5, r.z + 0.06], s: [r.w, 1, 0.12] });
+    boxes.push({ p: [r.x + r.w / 2, base + 0.5, r.z + r.d - 0.06], s: [r.w, 1, 0.12] });
+  }
   const res = { boxes, ops: [...ops.values()] };
   cache.set(level, res);
   return res;
@@ -71,4 +76,26 @@ export function blocked(x: number, z: number, y: number, r = 0.3): boolean {
   return build(y > 1.5 ? 1 : 0).boxes.some(
     (b) => Math.abs(x - b.p[0]) < b.s[0] / 2 + r && Math.abs(z - b.p[2]) < b.s[2] / 2 + r && b.p[1] + b.s[1] / 2 > lo && b.p[1] - b.s[1] / 2 < hi,
   );
+}
+
+// Toit-terrasse : dalle sur chaque pièce de l'étage (les vides restent ouverts) + acrotère de 60 cm sur le pourtour extérieur.
+export function roofParts(): Box[] {
+  const t = plan.wallT, y = 2 * plan.levelHeight, N = 6;
+  const rs = plan.rooms.filter((r) => r.level === 1 && r.name !== 'Balcon');
+  const inside = (x: number, z: number) => rs.some((q) => x > q.x - t && x < q.x + q.w + t && z > q.z - t && z < q.z + q.d + t);
+  const out: Box[] = [];
+  for (const r of rs) {
+    out.push({ p: [r.x + r.w / 2, y + 0.1, r.z + r.d / 2], s: [r.w + 2 * t, 0.2, r.d + 2 * t] });
+    for (const [dx, dz] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const horiz = dz !== 0, L = horiz ? r.w : r.d;
+      const line = horiz ? (dz < 0 ? r.z - t / 2 : r.z + r.d + t / 2) : (dx < 0 ? r.x - t / 2 : r.x + r.w + t / 2);
+      for (let i = 0; i < N; i++) {
+        const c = (horiz ? r.x : r.z) + ((i + 0.5) * L) / N;
+        const sx = horiz ? c : line + dx * (t / 2 + 0.1), sz = horiz ? line + dz * (t / 2 + 0.1) : c;
+        if (inside(sx, sz)) continue;
+        out.push({ p: horiz ? [c, y + 0.5, line] : [line, y + 0.5, c], s: horiz ? [L / N + 0.15, 0.6, t] : [t, 0.6, L / N + 0.15] });
+      }
+    }
+  }
+  return out;
 }
