@@ -130,7 +130,6 @@ function Main() {
         <Sky hour={hour} shadow={!light} />
         <Instances limit={5000} castShadow receiveShadow><boxGeometry /><meshStandardMaterial />
         {mode === 'orbit' && <Orbit />}
-        {b(cover, 'Piscine couverte', () => setCover((v) => !v))}
         {mode === 'walk' && <Walk />}
         {mode === 'tour' && <Tour onLevel={(l) => setShow(l)} />}
         <Box p={[plan.terrain.w / 2, -0.12, plan.terrain.d / 2]} s={[plan.terrain.w, 0.1, plan.terrain.d]} c={THEME.ground} />
