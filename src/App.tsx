@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { plan } from './plan';
 import { build, STAIR, type Op, type V3 } from './geometry';
 import { C, Decor, Outdoor, Roof } from './decor';
-import { Bx } from './shared';
+import { Bx, ui } from './shared';
 import { Tour, Walk } from './Rig';
 
 const THEME = { wall: C.off, ground: '#d8c9a3', sand: '#e0cfa9', wood: '#b98a5a', tile: '#cfc6b8', door: '#8a5a3a', glass: '#9fd0e8' };
@@ -25,7 +25,7 @@ function Door({ o, base }: { o: Op; base: number }) {
     if (!g.current) return;
     const dx = camera.position.x - o.x, dz = camera.position.z - o.z;
     const near = dx * dx + dz * dz < 2.6 && Math.abs(camera.position.y - (base + 1.65)) < 1.5;
-    a.current += ((open || near ? 1 : 0) - a.current) * Math.min(1, dt * 5);
+    a.current += ((open || near || (ui.doorsOpen && o.kind === 'door' && !o.gate && o.z < 21.9) ? 1 : 0) - a.current) * Math.min(1, dt * 5);
     if (slide) g.current.position.set(h ? o.x + a.current * o.w * 0.95 : o.x + 0.1, base, h ? o.z + 0.1 : o.z + a.current * o.w * 0.95);
     else g.current.rotation.y = (h ? -1 : 1) * a.current * 1.5;
   });
@@ -99,6 +99,8 @@ function Main() {
   const [hour, setHour] = useState(11);
   const [auto, setAuto] = useState(false);
   const [cover, setCover] = useState(false);
+  const [doorsOpen, setDoorsOpen] = useState(true);
+  ui.doorsOpen = doorsOpen;
   const [light, setLight] = useState(location.search.includes('leger'));
   const [roof, setRoof] = useState(true);
   const [ck, setCk] = useState(0);
@@ -108,21 +110,21 @@ function Main() {
     const i = setInterval(() => setHour((h) => (h + 0.04) % 24), 50);
     return () => clearInterval(i);
   }, [auto]);
-  const go = (m: Mode) => { setMode(m); setShow('all'); };
+  const go = (m: Mode) => { setMode(m); setShow('all'); setRoof(true); };
   const b = (on: boolean, label: string, fn: () => void) => (
     <button key={label} onClick={fn} style={{ marginRight: 6, padding: '6px 12px', fontWeight: on ? 700 : 400 }}>{label}</button>
   );
   return (
     <>
       <div style={{ position: 'absolute', zIndex: 1, top: 12, left: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 11, opacity: 0.6 }}>v6{light ? ' · léger' : ''}</div>
+        <div style={{ fontSize: 11, opacity: 0.6 }}>v9{light ? ' · léger' : ''}</div>
         <div>{b(mode === 'orbit', 'Vue libre', () => go('orbit'))}{b(mode === 'walk', 'Visite à pied', () => go('walk'))}{b(mode === 'tour', 'Visite auto', () => go('tour'))}</div>
         {mode === 'orbit' && <div>{b(show === 'all', 'Tout', () => setShow('all'))}{b(show === 0, 'Rez-de-chaussée', () => setShow(0))}{b(show === 1, 'Étage', () => setShow(1))}</div>}
         <label style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>
           Heure {Math.floor(hour)} h <input type="range" min={0} max={24} step={0.1} value={hour} onChange={(e) => setHour(+e.target.value)} />
           <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> défilement
         </label>
-        <div>{b(cover, 'Piscine couverte', () => setCover((v) => !v))}{b(roof, 'Toit', () => setRoof((v) => !v))}{b(light, 'Mode léger', () => setLight((v) => !v))}</div>
+        <div>{b(cover, 'Piscine couverte', () => setCover((v) => !v))}{b(roof, 'Toit', () => setRoof((v) => !v))}{b(doorsOpen, 'Portes ouvertes', () => setDoorsOpen((v) => !v))}{b(light, 'Mode léger', () => setLight((v) => !v))}</div>
         {mode === 'walk' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique dans la scène · ZQSD/flèches · Maj = courir · Échap = libérer la souris</div>}
         {mode === 'orbit' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique sur une porte pour l'ouvrir</div>}
       </div>
@@ -132,7 +134,7 @@ function Main() {
         <Instances limit={5000} castShadow receiveShadow><boxGeometry /><meshStandardMaterial />
         {mode === 'orbit' && <Orbit />}
         {mode === 'walk' && <Walk />}
-        {mode === 'tour' && <Tour onLevel={(l) => setShow(l)} />}
+        {mode === 'tour' && <Tour onPhase={(p) => { setShow(p === 'ext' ? 'all' : p === 'gf' ? 0 : 1); setRoof(p === 'ext'); }} />}
         <Box p={[plan.terrain.w / 2, -0.12, plan.terrain.d / 2]} s={[plan.terrain.w, 0.1, plan.terrain.d]} c={THEME.ground} />
         {plan.exterior.map((e) => (
           <Box key={e.id} p={[e.x + e.w / 2, EXT[e.kind][1] / 2 - 0.05, e.z + e.d / 2]} s={[e.w, EXT[e.kind][1], e.d]} c={EXT[e.kind][0]} />

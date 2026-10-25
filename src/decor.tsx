@@ -115,8 +115,8 @@ export function Outdoor({ Door, cover }: { Door: (p: { o: Op; base: number }) =>
       <Bx p={[T / 2, Hf / 2, D / 2]} s={[T, Hf, D]} c={C.off} />
       <Bx p={[W - T / 2, Hf / 2, D / 2]} s={[T, Hf, D]} c={C.off} />
       {south.map(([a, b]) => <Bx key={a} p={[(a + b) / 2, Hf / 2, D - T / 2]} s={[b - a, Hf, T]} c={C.off} />)}
-      <Door o={{ level: 0, x: 2.2, z: D - T / 2, kind: 'slide', w: 3.2, horiz: true }} base={0} />
-      <Door o={{ level: 0, x: 10.25, z: D - T / 2, kind: 'door', w: 1.0, horiz: true }} base={0} />
+      <Door o={{ level: 0, x: 2.2, z: D - T / 2, kind: 'slide', w: 3.2, horiz: true, gate: true }} base={0} />
+      <Door o={{ level: 0, x: 10.25, z: D - T / 2, kind: 'door', w: 1.0, horiz: true, gate: true }} base={0} />
       {/* Parking, allée, paillasson */}
       <Bx p={[1.9, 0.01, 17.5]} s={[3.4, 0.04, 9]} c="#c9c1b2" />
       <Bx p={[10.25, 0.01, 22.5]} s={[1.0, 0.04, 1.0]} c={C.grege} />

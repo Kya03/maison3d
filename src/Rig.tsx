@@ -36,26 +36,35 @@ export function Walk() {
   return <PointerLockControls />;
 }
 
-// Visite automatique : [position caméra, point regardé]. Les 5 premiers = extérieur (tous niveaux), le reste = rez-de-chaussée vu d'en haut.
-const KF: [V3, V3][] = [
+// Visite automatique : [position caméra, point regardé]. Extérieur (toit fermé) → rez-de-chaussée pièce par pièce → étage pièce par pièce.
+const EXT: [V3, V3][] = [
   [[-3, 9, 30], [9, 2, 12]], [[9.5, 6, 34], [9, 2, 12]], [[21, 9, 28], [9, 2, 12]], [[22, 9, 6], [9, 2, 12]], [[9, 10, -6], [9, 2, 12]],
-  [[6.2, 7, 25], [6.2, 0, 19.3]], [[13.8, 7, 25], [13.8, 0, 19.3]], [[15.2, 6.5, 18], [15, 0, 14.6]],
-  [[11.5, 6.5, 16], [12.1, 0, 12]], [[9.5, 7, 18], [9.5, 0, 11]], [[8.8, 7, 11], [8.8, 0, 6.2]], [[6, 7, 13], [6, 0, 9]],
 ];
-export function Tour({ onLevel }: { onLevel: (l: 'all' | 0) => void }) {
+const room = (x: number, z: number, y0: number, back: number, h: number): [V3, V3] => [[x, y0 + h, z + back], [x, y0, z]];
+const GF: [V3, V3][] = [
+  room(6.2, 19.3, 0, 5.5, 7.5), room(5.6, 15.8, 0, 5, 7), room(6.2, 10.2, 0, 5.8, 7.5), room(5.4, 6.3, 0, 5.2, 7), room(8.8, 6.2, 0, 5.8, 7.5),
+  room(12.2, 6.9, 0, 5.6, 7), room(12.1, 12, 0, 5.2, 7), room(15.2, 14.6, 0, 4.9, 7), room(13.8, 19.3, 0, 5.7, 7.5), room(9.5, 12, 0, 6, 8),
+];
+const UF: [V3, V3][] = [
+  room(6.2, 19, 3, 6, 7.5), room(5.6, 15.5, 3, 5, 7), room(6.2, 10.2, 3, 5.8, 7.5), room(5.4, 6.3, 3, 5.2, 7), room(8.8, 6.2, 3, 5.8, 7.5),
+  room(12.2, 6.9, 3, 5.6, 7), room(12.5, 11.3, 3, 5.2, 7), room(14.9, 14.2, 3, 5.3, 7), room(13.8, 18.5, 3, 7.5, 7.5), room(9.5, 12, 3, 6, 7.5),
+];
+const KF = [...EXT, ...GF, ...UF];
+export function Tour({ onPhase }: { onPhase: (p: 'ext' | 'gf' | 'uf') => void }) {
   const camera = useThree((s) => s.camera);
   const c = useMemo(() => ({
     p: new THREE.CatmullRomCurve3(KF.map((k) => new THREE.Vector3(...k[0])), true, 'catmullrom', 0.3),
     t: new THREE.CatmullRomCurve3(KF.map((k) => new THREE.Vector3(...k[1])), true, 'catmullrom', 0.3),
   }), []);
-  const u = useRef(0), phase = useRef<'all' | 0 | null>(null);
+  const u = useRef(0), phase = useRef('');
   const a = useMemo(() => new THREE.Vector3(), []), b = useMemo(() => new THREE.Vector3(), []);
   useFrame((_, dt) => {
-    u.current = (u.current + dt / 75) % 1;
+    u.current = (u.current + dt / (KF.length * 5)) % 1;
     c.p.getPoint(u.current, a); c.t.getPoint(u.current, b);
     camera.position.copy(a); camera.lookAt(b);
-    const ph = u.current < 5 / KF.length ? 'all' : 0;
-    if (phase.current !== ph) { phase.current = ph; onLevel(ph); }
+    const i = Math.floor(u.current * KF.length);
+    const ph = i < EXT.length ? 'ext' : i < EXT.length + GF.length ? 'gf' : 'uf';
+    if (phase.current !== ph) { phase.current = ph; onPhase(ph); }
   });
   return null;
 }

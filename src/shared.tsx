@@ -15,3 +15,6 @@ export function Bx({ p, s, c, o = 1 }: { p: V3; s: V3; c: string; o?: number; ca
   if (c === '#bcd9e6' || o < 1) return <mesh position={p} scale={s} geometry={unit} material={glass(c, c === '#bcd9e6' ? 0.4 : o)} />;
   return <Instance position={p} scale={s} color={c} />;
 }
+
+// Réglages d'affichage partagés (lus à chaque image par les portes).
+export const ui = { doorsOpen: true };

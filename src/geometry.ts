@@ -2,7 +2,7 @@ import { plan } from './plan';
 
 export type V3 = [number, number, number];
 export type Box = { p: V3; s: V3 };
-export type Op = { level: number; x: number; z: number; kind: 'door' | 'slide' | 'window' | 'arch'; w: number; horiz: boolean };
+export type Op = { level: number; x: number; z: number; kind: 'door' | 'slide' | 'window' | 'arch'; w: number; horiz: boolean; gate?: boolean };
 type Seg = { x1: number; z1: number; x2: number; z2: number };
 export const DIM = { door: { h: 2.1, sill: 0 }, slide: { h: 2.1, sill: 0 }, window: { h: 1.2, sill: 0.9 }, arch: { h: 2.4, sill: 0 } };
 export const STAIR = { x: 8.3, z: 16.85, w: 1.4, d: 5.0 }; // volée à gauche ; couloir d'entrée à droite

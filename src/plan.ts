@@ -39,12 +39,13 @@ export const plan = Plan.parse({
     r('e-esc', 'Escalier', 1, 8.3, 16.85, 2.4, 5.0, { floor: 'none' }),
     r('e-cours', 'Coursive', 1, 9.75, 16.85, 0.95, 5.0, { open: true }),
     r('e-hall', 'Hall', 1, 8.3, 8.3, 2.55, 8.55, { open: true }),
-    r('e-hall3', 'Hall', 1, 10.85, 8.3, 3.0, 1.85, { open: true }),
-    r('e-hallD', 'Hall', 1, 10.85, 13.35, 3.0, 2.4, { open: true }),
+    r('e-hall3', 'Hall', 1, 10.85, 8.3, 3.0, 1.4, { open: true }),
+    r('e-hallD', 'Hall', 1, 10.85, 12.9, 2.0, 2.5, { open: true }),
     r('e-pal', 'Palier', 1, 6.95, 14.3, 1.35, 2.4, { open: true }),
-    r('e-cuisR', 'Cuisine', 1, 11.1, 10.2, 2.8, 3.0, { floor: 'tile' }),
-    r('e-chR', 'Chambre', 1, 14.0, 12.5, 2.85, 3.2, { floor: 'wood' }),
-    r('e-salR', 'Salon', 1, 10.85, 15.85, 6.0, 4.0, { floor: 'wood' }),
+    r('e-cuisR', 'Cuisine', 1, 11.1, 9.85, 2.8, 2.9, { floor: 'tile' }),
+    r('e-chR', 'Chambre', 1, 12.9, 12.8, 3.95, 2.55, { floor: 'wood' }), // chambre en L : partie principale + alcôve nord
+    r('e-chR2', 'Chambre ext', 1, 14.05, 11.45, 2.8, 1.2, { floor: 'wood' }),
+    r('e-salR', 'Salon', 1, 10.85, 15.5, 6.0, 4.35, { floor: 'wood' }),
     r('e-salR2', 'Salon ext', 1, 14.0, 20.0, 2.85, 1.85, { floor: 'wood' }),
     r('e-balcS2', 'Balcon', 1, 10.85, 20.0, 3.0, 2.0, { open: true, floor: 'wood' }), // petit balcon, près de l'escalier
   ],
@@ -54,14 +55,14 @@ export const plan = Plan.parse({
     o(0, 6.15, 21.925, 'window', 1.5), o(0, 13.85, 21.925, 'window', 2.5), o(0, 8.8, 4.075, 'window', 2.0),
     o(0, 5.4, 4.075, 'window', 0.8), o(0, 4.075, 10.2, 'window', 1.2), o(0, 12.0, 5.575, 'window', 0.6),
     o(0, 6.725, 5.3, 'door', 0.8), o(0, 5.4, 8.225, 'door', 0.8), o(0, 10.0, 8.225, 'door', 0.9), o(0, 8.225, 8.8, 'door', 0.9),
-    o(0, 5.2, 16.775, 'door', 0.8), o(0, 7.6, 16.775, 'door', 0.9), o(0, 12.0, 10.525, 'door', 0.9),
+    o(0, 5.2, 16.775, 'door', 0.8), o(0, 7.6, 16.775, 'door', 0.9), o(0, 10.775, 11.2, 'door', 0.8),
     o(0, 13.425, 12.8, 'door', 0.8), o(0, 13.175, 7.3, 'door', 0.8), // toilette publique : porte vers l'extérieur
     o(0, 12.0, 16.775, 'slide', 1.6), o(0, 15.2, 12.475, 'slide', 2.0),
     // Étage
-    o(1, 8.8, 4.075, 'window', 2.0), o(1, 4.075, 10.2, 'window', 1.2), o(1, 15.4, 12.425, 'window', 1.6), o(1, 9.5, 21.925, 'window', 1.4),
+    o(1, 8.8, 4.075, 'window', 2.0), o(1, 4.075, 10.2, 'window', 1.2), o(1, 15.4, 11.375, 'window', 1.6), o(1, 15.4, 12.725, 'arch', 2.4), o(1, 9.5, 21.925, 'window', 1.4),
     o(1, 6.725, 5.3, 'door', 0.8), o(1, 5.4, 8.225, 'door', 0.8), o(1, 10.0, 8.225, 'door', 0.9), o(1, 12.0, 8.225, 'door', 0.8),
     o(1, 9.2, 10.075, 'door', 0.7), o(1, 8.225, 11.2, 'door', 0.9), o(1, 7.025, 15.5, 'door', 0.9), o(1, 7.5, 16.775, 'door', 1.2),
-    o(1, 11.025, 11.0, 'door', 0.8), o(1, 13.925, 14.0, 'door', 0.9), o(1, 10.775, 16.3, 'door', 0.9), o(1, 9.55, 16.775, 'arch', 1.8),
+    o(1, 11.025, 11.0, 'door', 0.8), o(1, 12.825, 14.0, 'door', 0.9), o(1, 10.775, 16.3, 'door', 0.9), o(1, 9.55, 16.775, 'arch', 1.8),
     o(1, 6.1, 20.925, 'slide', 2.0), o(1, 12.35, 19.925, 'slide', 1.2), o(1, 15.4, 19.925, 'arch', 2.0), o(1, 15.4, 21.925, 'window', 1.8),
   ],
   exterior: [
