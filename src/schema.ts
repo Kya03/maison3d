@@ -9,7 +9,7 @@ export const Room = z.object({
 });
 export const Opening = z.object({
   level: z.number().int(), x: z.number(), z: z.number(), // centre, sur l'axe du mur
-  kind: z.enum(['door', 'slide', 'window']), w: z.number().positive(),
+  kind: z.enum(['door', 'slide', 'window', 'arch']), w: z.number().positive(),
 });
 export const Exterior = z.object({
   id: z.string(), kind: z.enum(['pool', 'tank', 'pit', 'garden', 'garage']),

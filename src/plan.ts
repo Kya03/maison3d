@@ -1,10 +1,10 @@
 import { Plan } from './schema';
 
 // Source : PLAN_22.pdf (cotes en cm converties en m). Terrain 17 x 23 m, maison 13 x 18 m, retraits : 4 m gauche, 4 m fond, 1 m rue.
-// ATTENTION : plan dessiné à la main, positions déduites des cotes (± 10 cm). Hauteur sous plafond supposée (3,00 m) : non lisible sur la coupe AA.
-// Murs de 15 cm.
+// Plan dessiné à la main : positions déduites des cotes et du dessin (± 10-20 cm). Hauteur d'étage supposée : 3,00 m. Murs : 15 cm.
 const r = (id: string, name: string, level: number, x: number, z: number, w: number, d: number, extra = {}) =>
   ({ id, name, level, x, z, w, d, ...extra });
+const o = (level: number, x: number, z: number, kind: 'door' | 'slide' | 'window' | 'arch', w: number) => ({ level, x, z, kind, w });
 
 export const plan = Plan.parse({
   terrain: { w: 17, d: 23 },
@@ -15,7 +15,7 @@ export const plan = Plan.parse({
     r('r-sdb1', 'SDB', 0, 4.15, 4.15, 2.5, 2.0, { floor: 'tile' }),
     r('r-sdb2', 'SDB', 0, 4.15, 6.3, 2.5, 1.85, { floor: 'tile' }),
     r('r-ch1', 'Chambre', 0, 6.8, 4.15, 4.0, 4.0, { floor: 'wood' }),
-    r('r-toil', 'Toilettes', 0, 11.1, 4.15, 2.0, 2.5, { floor: 'tile' }),
+    r('r-toil', 'Toilettes', 0, 11.1, 5.65, 1.8, 2.5, { floor: 'tile' }), // toilette publique, porte côté piscine
     r('r-ch2', 'Chambre', 0, 4.15, 8.3, 4.0, 3.8, { floor: 'wood' }),
     r('r-sdb3', 'SDB', 0, 4.15, 14.9, 2.8, 1.8, { floor: 'tile' }),
     r('r-ch3', 'Chambre', 0, 4.15, 16.85, 4.0, 5.0, { floor: 'wood' }),
@@ -26,62 +26,47 @@ export const plan = Plan.parse({
     r('r-cuis', 'Cuisine', 0, 10.85, 10.6, 2.5, 2.8, { floor: 'tile' }),
     r('r-sam', 'Salle à manger', 0, 13.6, 12.55, 3.25, 4.15, { floor: 'tile' }),
     r('r-salon', 'Salon', 0, 10.85, 16.85, 6.0, 5.0, { floor: 'wood' }),
-    // ---- Étage (vides : pas de dalle au-dessus de l'espace familial) ----
+    // ---- Étage (zones hachurées du plan = hall / dégagement, praticables ; zones « VIDE » = ciel ouvert) ----
     r('e-sdb1', 'SDB', 1, 4.15, 4.15, 2.5, 2.0, { floor: 'tile' }),
     r('e-sdb2', 'SDB', 1, 4.15, 6.3, 2.5, 1.85, { floor: 'tile' }),
     r('e-ch1', 'Chambre', 1, 6.8, 4.15, 4.0, 4.0, { floor: 'wood' }),
-    r('e-toil', 'Toilettes', 1, 11.1, 4.15, 2.0, 2.5, { floor: 'tile' }),
+    r('e-toil', 'Toilettes', 1, 11.1, 5.65, 1.8, 2.5, { floor: 'tile' }),
+    r('e-toil2', 'Toilettes', 1, 8.6, 8.6, 1.2, 1.4, { floor: 'tile' }),
     r('e-ch2', 'Chambre', 1, 4.15, 8.3, 4.0, 3.8, { floor: 'wood' }),
-    r('e-cuisL', 'Cuisine', 1, 4.15, 14.9, 2.8, 2.5, { floor: 'tile' }),
-    r('e-salL', 'Salon', 1, 4.15, 17.55, 4.0, 4.3, { floor: 'wood' }),
-    r('e-esc', 'Escalier', 1, 8.3, 16.85, 2.4, 5.0, { floor: 'none', open: true }),
+    r('e-cuisL', 'Cuisine', 1, 4.15, 14.3, 2.8, 2.4, { floor: 'tile' }),
+    r('e-salL', 'Salon', 1, 4.15, 16.85, 4.0, 4.0, { floor: 'wood' }),
+    r('e-balcS1', 'Balcon', 1, 4.15, 21.0, 4.0, 1.5, { open: true, floor: 'wood' }), // grand balcon, façade, à gauche
+    r('e-esc', 'Escalier', 1, 8.3, 16.85, 2.4, 5.0, { floor: 'none' }),
+    r('e-cours', 'Coursive', 1, 9.75, 16.85, 0.95, 5.0, { open: true }),
     r('e-hall', 'Hall', 1, 8.3, 8.3, 2.55, 8.55, { open: true }),
-    r('e-cuisR', 'Cuisine', 1, 10.95, 9.9, 2.6, 2.7, { floor: 'tile' }),
-    r('e-chR', 'Chambre', 1, 13.7, 12.7, 3.15, 3.0, { floor: 'wood' }),
-    r('e-salR', 'Salon', 1, 10.85, 15.85, 6.0, 6.0, { floor: 'wood' }),
-    r('e-pal', 'Palier', 1, 6.95, 14.9, 1.35, 2.5, { open: true }),
-    // Balcons (hypothèse de Hop, absents du plan : à faire valider par l'architecte), en porte-à-faux de 1,20 m côté gauche (au-dessus du parking)
-    r('e-balc1', 'Balcon', 1, 2.8, 8.5, 1.2, 3.4, { open: true, floor: 'wood' }),
-    r('e-balc2', 'Balcon', 1, 2.8, 17.8, 1.2, 3.8, { open: true, floor: 'wood' }),
+    r('e-hall3', 'Hall', 1, 10.85, 8.3, 3.0, 1.85, { open: true }),
+    r('e-hallD', 'Hall', 1, 10.85, 13.35, 3.0, 2.4, { open: true }),
+    r('e-pal', 'Palier', 1, 6.95, 14.3, 1.35, 2.4, { open: true }),
+    r('e-cuisR', 'Cuisine', 1, 11.1, 10.2, 2.8, 3.0, { floor: 'tile' }),
+    r('e-chR', 'Chambre', 1, 14.0, 12.5, 2.85, 3.2, { floor: 'wood' }),
+    r('e-salR', 'Salon', 1, 10.85, 15.85, 6.0, 4.0, { floor: 'wood' }),
+    r('e-salR2', 'Salon ext', 1, 14.0, 20.0, 2.85, 1.85, { floor: 'wood' }),
+    r('e-balcS2', 'Balcon', 1, 10.85, 20.0, 3.0, 2.0, { open: true, floor: 'wood' }), // petit balcon, près de l'escalier
   ],
   openings: [
-    // RDC
-    { level: 0, x: 10.25, z: 21.925, kind: 'door', w: 1.0 }, // entrée : couloir à droite de l'escalier
-    { level: 0, x: 10.25, z: 16.775, kind: 'door', w: 1.0 }, // du couloir vers l'espace familial
-    { level: 0, x: 6.15, z: 21.925, kind: 'window', w: 1.5 },
-    { level: 0, x: 13.85, z: 21.925, kind: 'window', w: 2.5 },
-    { level: 0, x: 8.8, z: 4.075, kind: 'window', w: 2.0 },
-    { level: 0, x: 5.4, z: 4.075, kind: 'window', w: 0.8 },
-    { level: 0, x: 4.075, z: 10.2, kind: 'window', w: 1.2 },
-    { level: 0, x: 9.8, z: 8.225, kind: 'door', w: 0.9 },
-    { level: 0, x: 8.225, z: 10.0, kind: 'door', w: 0.9 },
-    { level: 0, x: 7.6, z: 16.775, kind: 'door', w: 0.9 },
-    { level: 0, x: 12.0, z: 10.525, kind: 'door', w: 0.9 },
-    { level: 0, x: 12.0, z: 16.775, kind: 'slide', w: 1.6 },
-    { level: 0, x: 15.2, z: 12.475, kind: 'slide', w: 2.0 },
-    { level: 0, x: 12.1, z: 6.725, kind: 'door', w: 0.8 },
+    // RDC : entrée par le couloir à droite de l'escalier, puis porte vers l'espace familial
+    o(0, 10.25, 21.925, 'door', 1.0), o(0, 10.25, 16.775, 'door', 1.0),
+    o(0, 6.15, 21.925, 'window', 1.5), o(0, 13.85, 21.925, 'window', 2.5), o(0, 8.8, 4.075, 'window', 2.0),
+    o(0, 5.4, 4.075, 'window', 0.8), o(0, 4.075, 10.2, 'window', 1.2), o(0, 12.0, 5.575, 'window', 0.6),
+    o(0, 6.725, 5.3, 'door', 0.8), o(0, 5.4, 8.225, 'door', 0.8), o(0, 10.0, 8.225, 'door', 0.9), o(0, 8.225, 8.8, 'door', 0.9),
+    o(0, 5.2, 16.775, 'door', 0.8), o(0, 7.6, 16.775, 'door', 0.9), o(0, 12.0, 10.525, 'door', 0.9),
+    o(0, 13.425, 12.8, 'door', 0.8), o(0, 13.175, 7.3, 'door', 0.8), // toilette publique : porte vers l'extérieur
+    o(0, 12.0, 16.775, 'slide', 1.6), o(0, 15.2, 12.475, 'slide', 2.0),
     // Étage
-    { level: 1, x: 6.15, z: 21.925, kind: 'window', w: 2.0 },
-    { level: 1, x: 13.85, z: 21.925, kind: 'window', w: 2.5 },
-    { level: 1, x: 8.8, z: 4.075, kind: 'window', w: 2.0 },
-    { level: 1, x: 9.8, z: 8.225, kind: 'door', w: 0.9 },
-    { level: 1, x: 8.225, z: 10.0, kind: 'door', w: 0.9 },
-    { level: 1, x: 10.875, z: 11.2, kind: 'door', w: 0.9 },
-    { level: 1, x: 10.775, z: 16.3, kind: 'door', w: 0.9 },
-    { level: 1, x: 15.0, z: 15.775, kind: 'door', w: 0.9 },
-    { level: 1, x: 6.725, z: 5.2, kind: 'door', w: 0.8 },
-    { level: 1, x: 6.725, z: 7.2, kind: 'door', w: 0.8 },
-    { level: 1, x: 5.5, z: 17.475, kind: 'door', w: 0.9 },
-    { level: 1, x: 7.5, z: 17.475, kind: 'door', w: 1.0 },
-    { level: 1, x: 7.025, z: 16.2, kind: 'door', w: 0.9 },
-    { level: 1, x: 4.075, z: 10.2, kind: 'slide', w: 1.6 }, // vers balcon de la chambre
-    { level: 1, x: 4.075, z: 19.7, kind: 'slide', w: 1.6 }, // vers balcon du salon
+    o(1, 8.8, 4.075, 'window', 2.0), o(1, 4.075, 10.2, 'window', 1.2), o(1, 15.4, 12.425, 'window', 1.6), o(1, 9.5, 21.925, 'window', 1.4),
+    o(1, 6.725, 5.3, 'door', 0.8), o(1, 5.4, 8.225, 'door', 0.8), o(1, 10.0, 8.225, 'door', 0.9), o(1, 12.0, 8.225, 'door', 0.8),
+    o(1, 9.2, 10.075, 'door', 0.7), o(1, 8.225, 11.2, 'door', 0.9), o(1, 7.025, 15.5, 'door', 0.9), o(1, 7.5, 16.775, 'door', 1.2),
+    o(1, 11.025, 11.0, 'door', 0.8), o(1, 13.925, 14.0, 'door', 0.9), o(1, 10.775, 16.3, 'door', 0.9), o(1, 9.55, 16.775, 'arch', 1.8),
+    o(1, 6.1, 20.925, 'slide', 2.0), o(1, 12.35, 19.925, 'slide', 1.2), o(1, 15.4, 19.925, 'arch', 2.0), o(1, 15.4, 21.925, 'window', 1.8),
   ],
   exterior: [
-    // Issus du plan de masse : FS (fosse septique), PP (puisard)
     { id: 'fs', kind: 'tank', x: 1.2, z: 0.5, w: 2.9, d: 2.6 },
     { id: 'pp', kind: 'pit', x: 6.2, z: 0.6, w: 2.0, d: 2.0 },
-    // Emplacements provisoires (à définir avec toi) : piscine, potager. Garage : non dessiné, position inconnue.
     { id: 'pool', kind: 'pool', x: 13.7, z: 4.4, w: 3.0, d: 3.8 },
     { id: 'potager', kind: 'garden', x: 0.4, z: 6.0, w: 3.2, d: 6.5 },
   ],

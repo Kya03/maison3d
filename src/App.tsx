@@ -44,7 +44,7 @@ function Door({ o, base }: { o: Op; base: number }) {
 
 function Level({ level }: { level: number }) {
   const base = level * plan.levelHeight, H = plan.levelHeight;
-  const { boxes, ops } = build(level);
+  const { boxes, ops, rails } = build(level);
   const rooms = plan.rooms.filter((r) => r.level === level);
   return (
     <group>
@@ -52,13 +52,14 @@ function Level({ level }: { level: number }) {
         <Box key={r.id} p={[r.x + r.w / 2, base - 0.06, r.z + r.d / 2]} s={[r.w + 0.1, 0.12, r.d + 0.1]} c={THEME[r.floor as 'sand' | 'wood' | 'tile']} />
       ))}
       {boxes.map((b, i) => <Box key={i} p={b.p} s={b.s} c={THEME.wall} />)}
-      {ops.map((o) => o.kind === 'window'
+      {rails.map((b, i) => <Box key={`r${i}`} p={b.p} s={b.s} c="#bcd9e6" />)}
+      {ops.filter((o) => o.kind !== 'arch').map((o) => o.kind === 'window'
         ? <Box key={`${o.x},${o.z}`} p={[o.x, base + 1.5, o.z]} s={o.horiz ? [o.w, 1.2, 0.03] : [0.03, 1.2, o.w]} c={THEME.glass} o={0.35} />
         : <Door key={`${o.x},${o.z}`} o={o} base={base} />)}
       {level === 0 && rooms.filter((r) => r.name === 'Escalier').map((r) => {
         const n = 16, rise = H / n, run = STAIR.d / n;
         return Array.from({ length: n }, (_, i) => (
-          <Box key={`${r.id}-${i}`} p={[STAIR.x + STAIR.w / 2, ((i + 1) * rise) / 2, STAIR.z + STAIR.d - (i + 0.5) * run]} s={[STAIR.w - 0.1, (i + 1) * rise, run]} c={THEME.tile} />
+          <Box key={`${r.id}-${i}`} p={[STAIR.x + STAIR.w / 2, ((i + 1) * rise) / 2, STAIR.z + (i + 0.5) * run]} s={[STAIR.w - 0.1, (i + 1) * rise, run]} c={THEME.tile} />
         ));
       })}
     </group>

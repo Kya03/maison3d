@@ -2,11 +2,11 @@ import { plan } from './plan';
 
 export type V3 = [number, number, number];
 export type Box = { p: V3; s: V3 };
-export type Op = { level: number; x: number; z: number; kind: 'door' | 'slide' | 'window'; w: number; horiz: boolean };
+export type Op = { level: number; x: number; z: number; kind: 'door' | 'slide' | 'window' | 'arch'; w: number; horiz: boolean };
 type Seg = { x1: number; z1: number; x2: number; z2: number };
-export const DIM = { door: { h: 2.1, sill: 0 }, slide: { h: 2.1, sill: 0 }, window: { h: 1.2, sill: 0.9 } };
+export const DIM = { door: { h: 2.1, sill: 0 }, slide: { h: 2.1, sill: 0 }, window: { h: 1.2, sill: 0.9 }, arch: { h: 2.4, sill: 0 } };
 export const STAIR = { x: 8.3, z: 16.85, w: 1.4, d: 5.0 }; // volée à gauche ; couloir d'entrée à droite
-const cache = new Map<number, { boxes: Box[]; ops: Op[] }>();
+const cache = new Map<number, { boxes: Box[]; ops: Op[]; rails: Box[] }>();
 
 export function build(level: number) {
   const hit = cache.get(level);
@@ -46,13 +46,16 @@ export function build(level: number) {
       boxes.push({ p: horiz ? [m, y, line] : [line, y, m], s: horiz ? [len, hh, t] : [t, hh, len] });
     }
   }
-  if (level === 0) boxes.push({ p: [9.76, 1.5, 18.55], s: [0.12, 3, 3.4] }); // cloison escalier / couloir
-  if (level === 1) for (const r of plan.rooms) if (r.name === 'Balcon') { // garde-corps plein de 1 m
-    boxes.push({ p: [r.x + 0.06, base + 0.5, r.z + r.d / 2], s: [0.12, 1, r.d] });
-    boxes.push({ p: [r.x + r.w / 2, base + 0.5, r.z + 0.06], s: [r.w, 1, 0.12] });
-    boxes.push({ p: [r.x + r.w / 2, base + 0.5, r.z + r.d - 0.06], s: [r.w, 1, 0.12] });
+  const rails: Box[] = [];
+  // Escalier en U : sous la volée (RDC) cloison pleine ; à l'étage, garde-corps le long du vide. Passage libre côté nord (RDC) et côté sud (étage).
+  if (level === 0) boxes.push({ p: [9.76, 1.5, 19.925], s: [0.12, 3, 3.85] });
+  if (level === 1) rails.push({ p: [9.76, base + 0.5, 18.925], s: [0.12, 1, 4.15] });
+  if (level === 1) for (const r of plan.rooms) if (r.name === 'Balcon') { // garde-corps vitré de 1 m, côté rue
+    rails.push({ p: [r.x + r.w / 2, base + 0.5, r.z + r.d - 0.06], s: [r.w, 1, 0.06] });
+    rails.push({ p: [r.x + 0.03, base + 0.5, r.z + r.d / 2], s: [0.06, 1, r.d] });
+    rails.push({ p: [r.x + r.w - 0.03, base + 0.5, r.z + r.d / 2], s: [0.06, 1, r.d] });
   }
-  const res = { boxes, ops: [...ops.values()] };
+  const res = { boxes, ops: [...ops.values()], rails };
   cache.set(level, res);
   return res;
 }
@@ -60,7 +63,7 @@ export function build(level: number) {
 // Hauteur du sol sous (x,z) ; null = vide (pas de dalle).
 export function groundY(x: number, z: number, y: number): number | null {
   const S = STAIR, H = plan.levelHeight;
-  if (x >= S.x && x <= S.x + S.w && z >= S.z && z <= S.z + S.d) return Math.min(H, Math.max(0, ((S.z + S.d - z) / S.d) * H));
+  if (x >= S.x && x <= S.x + S.w && z >= S.z && z <= S.z + S.d) return Math.min(H, Math.max(0, ((z - S.z) / S.d) * H)); // la volée monte vers le sud
   if (y > 1.5) {
     const t = plan.wallT;
     const ok = plan.rooms.some((r) => r.level === 1 && r.floor !== 'none' && x >= r.x - t && x <= r.x + r.w + t && z >= r.z - t && z <= r.z + r.d + t);
@@ -70,10 +73,11 @@ export function groundY(x: number, z: number, y: number): number | null {
 }
 
 export function blocked(x: number, z: number, y: number, r = 0.3): boolean {
-  if (x < 0.3 || x > plan.terrain.w - 0.3 || z < 0.3 || z > plan.terrain.d - 0.3) return true;
+  if (y < 1.5 && (x < 0.3 || x > plan.terrain.w - 0.3 || z < 0.3 || z > plan.terrain.d - 0.3)) return true;
   if (groundY(x, z, y) === null) return true;
   const lo = y + 0.3, hi = y + 1.6;
-  return build(y > 1.5 ? 1 : 0).boxes.some(
+  const bd = build(y > 1.5 ? 1 : 0);
+  return [...bd.boxes, ...bd.rails].some(
     (b) => Math.abs(x - b.p[0]) < b.s[0] / 2 + r && Math.abs(z - b.p[2]) < b.s[2] / 2 + r && b.p[1] + b.s[1] / 2 > lo && b.p[1] - b.s[1] / 2 < hi,
   );
 }

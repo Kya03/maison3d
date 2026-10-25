@@ -75,13 +75,6 @@ export function Decor({ level }: { level: number }) {
           </group>
         ))}
       </Suspense>
-      {/* Claustra en bois sur les balcons : protège du regard, de la chaleur et de l'extérieur */}
-      {level === 1 && plan.rooms.filter((r) => r.name === 'Balcon').map((r) => (
-        <group key={r.id}>
-          {Array.from({ length: Math.floor(r.d / 0.18) }, (_, i) => <Bx key={i} p={[r.x + 0.03, Hh + 1.8, r.z + 0.15 + i * 0.18]} s={[0.05, 1.6, 0.08]} c={C.bois} cast />)}
-          <Bx p={[r.x + 0.03, Hh + 2.65, r.z + r.d / 2]} s={[0.1, 0.08, r.d]} c={C.bois} />
-        </group>
-      ))}
     </group>
   );
 }
