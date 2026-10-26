@@ -99,6 +99,10 @@ function Main() {
   const [hour, setHour] = useState(11);
   const [auto, setAuto] = useState(false);
   const [cover, setCover] = useState(false);
+  const [rec, setRec] = useState(false);
+  const [runKey, setRunKey] = useState(0);
+  const [prog, setProg] = useState(0);
+  const [speed, setSpeed] = useState(1);
   const [doorsOpen, setDoorsOpen] = useState(true);
   ui.doorsOpen = doorsOpen;
   const [light, setLight] = useState(location.search.includes('leger'));
@@ -110,14 +114,14 @@ function Main() {
     const i = setInterval(() => setHour((h) => (h + 0.04) % 24), 50);
     return () => clearInterval(i);
   }, [auto]);
-  const go = (m: Mode) => { setMode(m); setShow('all'); setRoof(true); };
+  const go = (m: Mode) => { setMode(m); setShow('all'); setRoof(true); setRec(false); };
   const b = (on: boolean, label: string, fn: () => void) => (
     <button key={label} onClick={fn} style={{ marginRight: 6, padding: '6px 12px', fontWeight: on ? 700 : 400 }}>{label}</button>
   );
   return (
     <>
       <div style={{ position: 'absolute', zIndex: 1, top: 12, left: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 11, opacity: 0.6 }}>v10{light ? ' · léger' : ''}</div>
+        <div style={{ fontSize: 11, opacity: 0.6 }}>v11{light ? ' · léger' : ''}</div>
         <div>{b(mode === 'orbit', 'Vue libre', () => go('orbit'))}{b(mode === 'walk', 'Visite à pied', () => go('walk'))}{b(mode === 'tour', 'Visite auto', () => go('tour'))}</div>
         {mode === 'orbit' && <div>{b(show === 'all', 'Tout', () => setShow('all'))}{b(show === 0, 'Rez-de-chaussée', () => setShow(0))}{b(show === 1, 'Étage', () => setShow(1))}</div>}
         <label style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>
@@ -125,16 +129,17 @@ function Main() {
           <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> défilement
         </label>
         <div>{b(cover, 'Piscine couverte', () => setCover((v) => !v))}{b(roof, 'Toit', () => setRoof((v) => !v))}{b(doorsOpen, 'Portes ouvertes', () => setDoorsOpen((v) => !v))}{b(light, 'Mode léger', () => setLight((v) => !v))}</div>
+        {mode === 'tour' && <div>{b(speed === 0.8, 'Lent', () => setSpeed(0.8))}{b(speed === 1, 'Normal', () => setSpeed(1))}{b(speed === 1.5, 'Rapide', () => setSpeed(1.5))}{b(rec, rec ? `Enregistrement ${prog} % · annuler` : 'Enregistrer la visite (vidéo)', () => { setRec((v) => !v); setRunKey((k) => k + 1); setProg(0); })}</div>}
         {mode === 'walk' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique dans la scène · ZQSD/flèches · Maj = courir · Échap = libérer la souris</div>}
         {mode === 'orbit' && <div style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>Clique sur une porte pour l'ouvrir</div>}
       </div>
-      <Canvas key={ck} shadows={!light} dpr={1} camera={{ position: [10, 24, 40], fov: 45 }}
+      <Canvas key={ck} shadows={!light} dpr={1} gl={{ preserveDrawingBuffer: true }} camera={{ position: [10, 24, 40], fov: 45 }}
         onCreated={({ gl }) => gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost.current += 1; if (lost.current > 1) setLight(true); setTimeout(() => setCk((k) => k + 1), 400); })}>
         <Sky hour={hour} shadow={!light} />
         <Instances limit={5000} castShadow receiveShadow><boxGeometry /><meshStandardMaterial />
         {mode === 'orbit' && <Orbit />}
         {mode === 'walk' && <Walk />}
-        {mode === 'tour' && <Tour onPhase={(p) => { setShow(p === 'ext' ? 'all' : p === 'gf' ? 0 : 1); setRoof(p === 'ext'); }} />}
+        {mode === 'tour' && <Tour record={rec} runKey={runKey} speed={speed} onProgress={setProg} onDone={() => setRec(false)} />}
         <Box p={[plan.terrain.w / 2, -0.12, plan.terrain.d / 2]} s={[plan.terrain.w, 0.1, plan.terrain.d]} c={THEME.ground} />
         {plan.exterior.map((e) => (
           <Box key={e.id} p={[e.x + e.w / 2, EXT[e.kind][1] / 2 - 0.05, e.z + e.d / 2]} s={[e.w, EXT[e.kind][1], e.d]} c={EXT[e.kind][0]} />
