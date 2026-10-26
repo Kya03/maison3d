@@ -59,7 +59,7 @@ function Level({ level }: { level: number }) {
       {level === 0 && rooms.filter((r) => r.name === 'Escalier').map((r) => {
         const n = 16, rise = H / n, run = STAIR.d / n;
         return Array.from({ length: n }, (_, i) => (
-          <Box key={`${r.id}-${i}`} p={[STAIR.x + STAIR.w / 2, ((i + 1) * rise) / 2, STAIR.z + (i + 0.5) * run]} s={[STAIR.w - 0.1, (i + 1) * rise, run]} c={THEME.tile} />
+          <Box key={`${r.id}-${i}`} p={[STAIR.x + STAIR.w / 2, ((i + 1) * rise) / 2, STAIR.z + (i + 0.5) * run]} s={[STAIR.w - 0.1, (i + 1) * rise, run]} c="#5a3d2a" />
         ));
       })}
     </group>
@@ -117,7 +117,7 @@ function Main() {
   return (
     <>
       <div style={{ position: 'absolute', zIndex: 1, top: 12, left: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 11, opacity: 0.6 }}>v9{light ? ' · léger' : ''}</div>
+        <div style={{ fontSize: 11, opacity: 0.6 }}>v10{light ? ' · léger' : ''}</div>
         <div>{b(mode === 'orbit', 'Vue libre', () => go('orbit'))}{b(mode === 'walk', 'Visite à pied', () => go('walk'))}{b(mode === 'tour', 'Visite auto', () => go('tour'))}</div>
         {mode === 'orbit' && <div>{b(show === 'all', 'Tout', () => setShow('all'))}{b(show === 0, 'Rez-de-chaussée', () => setShow(0))}{b(show === 1, 'Étage', () => setShow(1))}</div>}
         <label style={{ background: '#fffc', padding: '4px 8px', borderRadius: 6 }}>
